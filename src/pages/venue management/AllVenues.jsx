@@ -100,8 +100,8 @@ const AllVenues = () => {
                   placeholder="Search clients..."
                   className="w-full pl-3 text-sm text-black outline-none focus:outline-none bg-transparent" />
               </div>
-              <Link className="bg-blue-500 dark:bg-gray-100 text-white active:bg-blue-600 dark:text-gray-800 dark:active:text-gray-700 text-xs font-bold uppercase px-3 py-2 rounded outline-none focus:outline-none mr-1 mb-4 ease-linear transition-all duration-150" to="user/create">
-                Create User
+              <Link className="bg-blue-500 dark:bg-gray-100 text-white active:bg-blue-600 dark:text-gray-800 dark:active:text-gray-700 text-xs font-bold uppercase px-3 py-2 rounded outline-none focus:outline-none mr-1 mb-4 ease-linear transition-all duration-150" to="add-venue">
+                Add Venue
               </Link>
             </div>
             <div className="w-full overflow-hidden rounded-lg shadow-xs">

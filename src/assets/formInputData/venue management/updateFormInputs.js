@@ -93,7 +93,7 @@ export const VENUE_INPUTS = [
         noninputtag: null,
         rows: 4,
         labelclass: "block text-sm font-medium text-gray-400",
-        className: "mt-1 p-2 w-full border rounded-md focus:border-gray-200 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-300",
+        className: "mt-1 p-2 w-full border text-black rounded-md focus:border-gray-200 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-300",
         error: "Should contain only numbers, no white spaces, no alphabets, no special charecters except '+'.",
         wrapperdivclass: "sm:col-span-3",
         pattern: "^[a-zA-Z0-9\\s,.\\-]*$",
