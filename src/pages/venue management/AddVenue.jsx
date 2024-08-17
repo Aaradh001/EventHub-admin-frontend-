@@ -7,6 +7,7 @@ import { TError, TSuccess } from '../../components/Toastify';
 import Loader from '../common/Loader';
 import VenueDetails from './VenueDetails';
 import { MdFormatAlignCenter } from 'react-icons/md';
+import { useNavigate } from 'react-router-dom';
 // import { useParams } from 'react-router-dom';
 
 const AddVenue = () => {
@@ -52,6 +53,7 @@ const AddVenue = () => {
     const [isLoading, setIsLoading] = useState(true);
     const inputs = VENUE_INPUTS;
     const token = localStorage.getItem("access");
+    const navigate = useNavigate();
 
 
     const handleSubmit = (e) => {
@@ -67,11 +69,11 @@ const AddVenue = () => {
                 console.log(res);
                 if (res.status === 201) {
                     TSuccess("Venue created successfully");
-                    setVenueDetails((prev)=>({
+                    setVenueDetails((prev) => ({
                         ...prev,
-                        id:res.data.id
+                        id: res.data.id
                     }))
-                    
+
                     setIsVenueCreated(true)
                 }
             })
@@ -131,17 +133,18 @@ const AddVenue = () => {
     async function handleImageSubmit(e) {
         // const imageFile = imageInputRef.current.files[0];
         e.preventDefault();
+        console.log("Venue images   :", venueDetails);
         const formData = new FormData()
         VenueImage.forEach((item, index) => {
-            
             formData.append(item.caption, item.image);
         });
-      
+        formData.append("venue_id", venueDetails.id)
+
 
         // VenueImage.map((file, index)=>(
         //     formData.append(`${file.caption}`, VenueImage)
         // ))
-    
+
         // const data = { 
         //     files: formData,
         //     venueId: venueDetails.id
@@ -158,17 +161,23 @@ const AddVenue = () => {
             })
                 .then((res) => {
                     console.log("from image submission  :", res);
-                    TSuccess("Image updated !!")
-                    setVenueDetails((prev) => {
-                        const updatedImages = prev.images.map(image =>
-                            image.id === res.data.id ? { ...image, image: res.data.image } : image
-                        );
-                        return { ...prev, images: updatedImages };
-                    }
-                    )
+                    TSuccess("Images Added !!")
+                    navigate(`/venue-management/venue-detail/${venueDetails.id}`, { replace: true })                                         
+
+                    // setVenueDetails((prev) => {
+                    //     const updatedImages = prev.images.map(image =>
+                    //         image.id === res.data.id ? { ...image, image: res.data.image } : image
+                    //     );
+                    //     return { ...prev, images: updatedImages };
+                    // }
+                    // )
                 });
         } catch (error) {
-            console.log("the error is  :", error);
+            console.error('Failed to upload images:', error);
+            // Iterate through the errors and log or display specific error messages
+            // error.forEach((error, index) => {
+            //     console.error(`Error with image ${VenueImage[index].caption}:`, error);
+            // });
         }
     }
     function handleCaptionChange(e) {
@@ -208,9 +217,7 @@ const AddVenue = () => {
     }
     function removeSelectedImage(e, id) {
         setVenueImage((prev) => (prev.filter((item) => !(item.id === id))))
-
     }
-    console.log("image object is   :", VenueImage);
 
     useEffect(() => {
         fetchInitialData(baseURL + `admin-control/venue-management/all-amenities/`);
@@ -345,7 +352,7 @@ const AddVenue = () => {
                                                                     <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
                                                                 </svg>
                                                                 <p className="mb-2 text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                                                <p className="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                                                                <p className="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG </p>
                                                             </div>
                                                             <input id="dropzone-file" ref={venueImageRef} onChange={handleImageDrag} type="file" name='' className="hidden" />
                                                         </label>

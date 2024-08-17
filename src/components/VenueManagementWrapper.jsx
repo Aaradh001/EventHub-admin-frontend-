@@ -12,7 +12,7 @@ const VenueManagementWrapper = () => {
     <>
       <Routes>
         <Route path="/" element={<AllVenues />} />
-        <Route path="/venue-detail/:venueId" element={<VenueDetails />} />
+        <Route path="/venue-detail/:venueId/" element={<VenueDetails />} />
         <Route path="/add-venue/" element={<AddVenue />} />
       </Routes>
     </>

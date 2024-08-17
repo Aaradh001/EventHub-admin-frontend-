@@ -148,7 +148,7 @@ const AllVenues = () => {
                           </div>
                         </td> */}
                         <td className="px-4 py-3 text-sm">
-                          <Link to={`venue-detail/${venue.id}`} className="mr-4 text-blue-200 hover:text-blue-500 cursor-pointer ">
+                          <Link to={`venue-detail/${venue.id}/`} className="mr-4 text-blue-200 hover:text-blue-500 cursor-pointer ">
                             {venue.name}
                           </Link>
                         </td>

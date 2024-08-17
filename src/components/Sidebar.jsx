@@ -58,6 +58,31 @@ const Sidebar = () => {
             </div>
           </li>
 
+          <li>
+            <a href="#vendor-management"
+              className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-blue-800 dark:hover:bg-gray-600 text-white-600 hover:text-white-800 border-l-4 border-transparent hover:border-blue-500 dark:hover:border-gray-800 pr-6 transition duration-150 ease-in-out"
+              data-twe-collapse-init
+              aria-expanded="false"
+              aria-controls="vendor-management"
+            >
+              <span className="inline-flex justify-center items-center ml-4">
+                <LiaUsersCogSolid className="w-5 h-5" />
+              </span>
+              <span className="ml-2 text-sm tracking-wide truncate">Vendor Management</span>
+            </a>
+
+            <div
+              className="!visible hidden"
+              id="vendor-management"
+              data-twe-collapse-item>
+              <NavLink activeclassname="active" to={"vendor-management/"} className="relative flex flex-row items-center h-11 focus:outline-none hover:bg-blue-800  dark:hover:bg-gray-400 text-white-600 hover:text-white-800 border-l-4 border-transparent hover:border-blue-500 dark:hover:border-gray-800 pr-6">
+                <span className="inline-flex justify-center items-center ml-8">
+                  <PiUsersThreeLight className='w-4 h-4' />
+                </span>
+                <span className="ml-2 text-xs tracking-wide truncate">All Vendors</span>
+              </NavLink>
+            </div>
+          </li>
 
 
           <li>

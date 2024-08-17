@@ -14,6 +14,7 @@ import Layout from "./Layout";
 import NotFoundPage from "./NotFoundPage";
 import 'react-toastify/dist/ReactToastify.css';
 import VenueManagementWrapper from "./VenueManagementWrapper";
+import VendorManagementWrapper from "./VendorManagementWrapper";
 
 
 function MainWrapper() {
@@ -70,6 +71,7 @@ function MainWrapper() {
         <Route path="/" element={<PrivateRoute><Layout/></PrivateRoute>}>
           <Route index element={<Dashboard/>}/>
           <Route path="client-management/*" element={<ClientManagementWrapper/>}/>
+          <Route path="vendor-management/*" element={<VendorManagementWrapper/>}/>
           <Route path="venue-management/*" element={<VenueManagementWrapper/>}/>
         </Route>
         <Route path="*" element={<NotFoundPage/>}/>

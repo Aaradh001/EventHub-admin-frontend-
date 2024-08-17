@@ -12,10 +12,10 @@ import { BASE_URL } from "../../constants/constants";
 import { toast } from 'react-toastify';
 import Loader from "../common/Loader";
 
-function AllClients(props) {
+function AllVendors() {
   const baseURL = BASE_URL;
-  const [clients, setClients] = useState([]);
-  const [filteredClients, setFilteredClients] = useState([]);
+  const [vendors, setVendors] = useState([]);
+  const [filteredVendors, setFilteredVendors] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [nextPage, setNextPage] = useState(null);
@@ -47,18 +47,17 @@ function AllClients(props) {
           setIsLoading(false)
         }, 500)
 
-        setClients(response.data.results.results);
-        setFilteredClients(response.data.results.results);
+        setVendors(response.data.results.results);
+        setFilteredVendors(response.data.results.results);
         setNextPage(response.data.next);
         setPrevPage(response.data.previous);
         setPageCount(response.data.results.total_pages);
         setCurrentPage(response.data.results.current_page);
       })
       .catch((error) => {
-        console.error("Error fetching clients:", error);
+        console.error("Error fetching vendors:", error);
       });
   };
-
 
 
   const handleSearch = (query) => {
@@ -66,54 +65,51 @@ function AllClients(props) {
     setSearchQuery(query);
     // fetchUsers(`${baseURL}/admin-control/all-clients/?search=${query}`);
   };
-
   if (searchQuery) {
     const query = searchQuery.toLowerCase();
-    const filteredItems = clients.filter(client => {
-      const fullName = `${client.first_name} ${client.last_name}`.toLowerCase();
-      const userName = client.client.username.toLowerCase();
-      const email = client.client.email.toLowerCase();
-      if (fullName.startsWith(query) || userName.startsWith(query) || email.startsWith(query)) {
+    const filteredItems = vendors.filter(vendors => {
+      const company_name = vendors.company_name;
+      const userName = vendors.vendor.username.toLowerCase();
+      const email = vendors.vendor.email.toLowerCase();
+      if (company_name.includes(query) || userName.startsWith(query) || email.startsWith(query)) {
         return true;
       }
       return false;
     })
-    if (filteredClients.length != filteredItems.length) {
-      setFilteredClients(filteredItems)
+    if (filteredVendors.length != filteredItems.length) {
+      setFilteredVendors(filteredItems)
     }
   } else {
-    if (filteredClients.length != clients.length) {
-      setFilteredClients(clients)
+    if (filteredVendors.length != vendors.length) {
+      setFilteredVendors(vendors)
     }
   }
 
-  const clientControl = (clientId, isActive) => {
-    axios
-      .patch(`${baseURL}admin-control/client-management/client/${clientId}/`,
-        {
-          'client': {
-            "is_active": isActive
-          }
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-
-          }
-        })
+  const vendorControl = (vendorId, isActive) => {
+    axios.patch(`${baseURL}admin-control/vendor-management/vendor/${vendorId}/`,
+      {
+        'vendor': {
+          "is_active": isActive
+        }
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      })
       .then((response) => {
         console.log(response);
-        const updatedClients = clients.map(client => {
-          if (client.id === clientId) {
-            isActive ? showMessage(true, `The user ${client.client.username} is now active !`)
-              : showMessage(false, `The user ${client.client.username} is now blocked !`)
-            return { ...client, client: { ...client.client, is_active: isActive } };
+        const updatedVendors = vendors.map(vendor => {
+          if (vendor.id === vendorId) {
+            isActive ? showMessage(true, `The user ${vendor.vendor.username} is now active !`)
+              : showMessage(false, `The user ${vendor.vendor.username} is now blocked !`)
+            return { ...vendor, vendor: { ...vendor.vendor, is_active: isActive } };
           }
-          return client;
+          return vendor;
         });
-        setClients(updatedClients);
-        setFilteredClients(updatedClients);
-        console.log("updated  :", updatedClients);
+        setVendors(updatedVendors);
+        setFilteredVendors(updatedVendors);
+        console.log("updated  :", updatedVendors);
         // showMessage(false, message)
       })
       .catch((error) => {
@@ -124,14 +120,14 @@ function AllClients(props) {
   };
 
   useEffect(() => {
-    fetchUsers(baseURL + "/admin-control/client-management/clients/");
+    fetchUsers(baseURL + "/admin-control/vendor-management/vendors/");
   }, []);
 
   return (
     <>
       {isLoading ? <Loader /> : (
         <div className="h-full ml-14 mt-14 mb-10 md:ml-64">
-          <h4 className="my-4 mx-2 ">All Clients</h4>
+          <h4 className="my-4 mx-2 ">All Vendors</h4>
 
           {/* <Link className="bg-blue-500 dark:bg-gray-100 text-white active:bg-blue-600 dark:text-gray-800 dark:active:text-gray-700 text-xs font-bold uppercase px-3 py-1 rounded outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150" to="user/create">
             Create User
@@ -151,8 +147,7 @@ function AllClients(props) {
                     <tr className="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b dark:border-gray-700 bg-gray-50 dark:text-gray-400 dark:bg-gray-800">
                       <th className="px-4 py-3 text-center">Profile Image</th>
                       <th className="px-4 py-3">Username</th>
-                      <th className="px-4 py-3">First name</th>
-                      <th className="px-4 py-3">Last name</th>
+                      <th className="px-4 py-3">Company name</th>
                       <th className="px-4 py-3">Email</th>
                       <th className="px-4 py-3">Phone</th>
                       <th className="px-4 py-3 text-center">Active Status</th>
@@ -161,20 +156,20 @@ function AllClients(props) {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y dark:divide-gray-700 dark:bg-gray-800">
-                    {filteredClients.length === 0 && (
+                    {filteredVendors.length === 0 && (
                       <tr>
-                        <td>No Users Found Your Match</td>
+                        <td>No Vendors Found Your Match</td>
                       </tr>
                     )}
-                    {filteredClients.map((client) => (
-                      <tr className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-700 dark:text-gray-400" key={client.id}>
+                    {filteredVendors.map((vendor) => (
+                      <tr className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-900 text-gray-700 dark:text-gray-400" key={vendor.id}>
                         <td className="px-4 py-3">
                           <div className="flex justify-center text-sm">
                             <div className="relative  w-8 h-8 mr-3 rounded-full ">
                               <img
                                 src={
-                                  client.profile_pic
-                                    ? client.profile_pic
+                                  vendor.profile_pic
+                                    ? vendor.profile_pic
                                     : userimg
                                 }
                                 className="object-cover w-full h-full rounded-full"
@@ -186,23 +181,22 @@ function AllClients(props) {
                           </div>
                         </td>
                         <td className="px-4 py-3 text-sm">
-                          <Link to={`client-detail/${client.id}`} className="mr-4 text-blue-200 hover:text-blue-500 cursor-pointer ">
-                            {client.client.username}
+                          <Link to={`vendor-detail/${vendor.id}`} className="mr-4 text-blue-200 hover:text-blue-500 cursor-pointer ">
+                            {vendor.vendor.username}
                           </Link>
                         </td>
-                        <td className="px-4 py-3 text-sm">{client.first_name}</td>
-                        <td className="px-4 py-3 text-sm">{client.last_name}</td>
-                        <td className="px-4 py-3 text-sm">{client.client.email}</td>
-                        <td className="px-4 py-3 text-sm">{client.client.phone_number}</td>
-                        <td className="px-4 py-3 text-sm text-center">{client.client.is_active ? "Active" : "Not Active"}</td>
+                        <td className="px-4 py-3 text-sm">{vendor.company_name}</td>
+                        <td className="px-4 py-3 text-sm">{vendor.vendor.email}</td>
+                        <td className="px-4 py-3 text-sm">{vendor.vendor.phone_number}</td>
+                        <td className="px-4 py-3 text-sm text-center">{vendor.vendor.is_active ? "Active" : "Not Active"}</td>
                         <td className="px-4 py-3 text-sm flex justify-center">
                           {/* <div className="inline-flex items-center">
                             <div className="relative inline-block w-8 h-4 rounded-full cursor-pointer"> */}
-                          <label htmlFor={`switch${client.id}`}
+                          <label htmlFor={`switch${vendor.id}`}
                             className="relative inline-flex items-center cursor-pointer">
-                            <input checked={client.client.is_active} onChange={(e) => clientControl(client.id, e.target.checked)} type="checkbox"
+                            <input checked={vendor.vendor.is_active} onChange={(e) => vendorControl(vendor.id, e.target.checked)} type="checkbox"
                               className="sr-only peer"
-                              id={`switch${client.id}`}
+                              id={`switch${vendor.id}`}
                             />
                             <div className="peer rounded-br-xl rounded-tl-xl flex items-center outline-none duration-100 after:duration-500 w-14 h-7 bg-red-500 peer-checked:bg-green-500 after:content-['N'] after:absolute after:outline-none after:rounded-br-lg after:rounded-tl-lg after:h-5 after:w-5 after:bg-white after:left-1 after:flex after:justify-center after:items-center  after:text-sky-800 after:font-bold peer-checked:after:translate-x-6 peer-checked:after:content-['Y'] peer-checked:after:border-white">
                             </div>
@@ -210,57 +204,6 @@ function AllClients(props) {
                           {/* </div>
                           </div> */}
                         </td>
-                        {/* <td>
-                          <Menu as="div" className="relative inline-block text-left">
-                          <div>
-                          <Menu.Button className="inline-flex w-full justify-center rounded-md px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-400 hover:bg-black/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75">
-                          Options
-                          <ChevronDownIcon
-                          className="-mr-1 ml-2 h-5 w-5 text-violet-200 hover:text-violet-100"
-                          aria-hidden="true"
-                          />
-                          </Menu.Button>
-                          </div>
-                          <Transition
-                          as={Fragment}
-                          enter="transition ease-out duration-100"
-                          enterFrom="transform opacity-0 scale-95"
-                          enterTo="transform opacity-100 scale-100"
-                          leave="transition ease-in duration-75"
-                          leaveFrom="transform opacity-100 scale-100"
-                          leaveTo="transform opacity-0 scale-95"
-                          >
-                          <Menu.Items className="absolute z-50 right-10 bottom-0  mt-2 w-25 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none">
-                              <div className="px-1 py-1 ">
-                              <Menu.Item>
-                                    {({ active }) => (
-                                      <Link
-                                      // to={""}
-                                      className={`${
-                                        active ? 'bg-violet-500 text-white' : 'text-gray-900'
-                                      } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
-                                      >
-                                      Edit
-                                      </Link>
-                                      )}
-                                      </Menu.Item>
-                                      <Menu.Item>
-                                      {({ active }) => (
-                                        <Link
-                                    // to={""}
-                                    className={`${
-                                      active ? 'bg-violet-500 text-white' : 'text-gray-900'
-                                    } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
-                                    >
-                                    Duplicate
-                                    </Link>
-                                    )}
-                                    </Menu.Item>
-                                    </div>
-                                    </Menu.Items>
-                                    </Transition>
-                                    </Menu>
-                                  </td> */}
                       </tr>
                     ))}
                   </tbody>
@@ -304,4 +247,4 @@ function AllClients(props) {
   );
 }
 
-export default AllClients;
+export default AllVendors;

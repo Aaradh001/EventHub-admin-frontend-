@@ -8,9 +8,15 @@ import { useParams } from 'react-router-dom';
 import Loader from '../common/Loader';
 
 const VenueDetails = () => {
+    const inputs = VENUE_INPUTS;
+    const baseURL = BASE_URL;
+    const token = localStorage.getItem("access");
+    const [showDropdown, setShowDropdown] = useState(false)
     const { venueId } = useParams();
-
-
+    const venueCaptionRef = useRef("");
+    const venueImageRef = useRef(null);
+    const [VenueImage, setVenueImage] = useState([])
+    const [isLoading, setIsLoading] = useState(true);
     const [venueDetails, setVenueDetails] = useState({
         id: "",
         name: "",
@@ -37,10 +43,6 @@ const VenueDetails = () => {
     });
 
 
-    const [isLoading, setIsLoading] = useState(true);
-    const inputs = VENUE_INPUTS;
-    const baseURL = BASE_URL;
-    const token = localStorage.getItem("access");
     const fetchVenueData = async (url) => {
         try {
             await axios.get(url, {
@@ -164,13 +166,78 @@ const VenueDetails = () => {
     }
     console.log("the state is   :", venueDetails)
 
+    function handleCaptionChange(e) {
+        console.log("working");
+        if (e.target.value && !showDropdown) {
+            setShowDropdown(true)
+        }
+        else if (!e.target.value) {
+            setShowDropdown(false)
+        }
+    }
 
+    function handleImageDrag(e) {
+        console.log('hkgfgasdfhghfghmnawvfjh');
+        // console.log(e.target.files);
+
+        if (e.target.files[0]) {
+            const image = venueImageRef.current.files[0]
+            const caption = venueCaptionRef.current.value
+            if (VenueImage.find((file) => file.caption === caption || file.image.name === image.name)) {
+                TError("Enter a different caption or image")
+                venueCaptionRef.current.value = ""
+                venueImageRef.current.value = null
+                setShowDropdown(false)
+                return
+            }
+            setVenueImage((prev) => ([...prev, {
+                id: new Date().getMilliseconds(),
+                image: image,
+                caption: caption
+            }]))
+            venueCaptionRef.current.value = ""
+            venueImageRef.current.value = null
+
+            setShowDropdown(false)
+        }
+    }
+
+    function removeSelectedImage(e, id) {
+        setVenueImage((prev) => (prev.filter((item) => !(item.id === id))))
+    }
+
+    async function handleImageSubmit(e) {
+        e.preventDefault();
+        const formData = new FormData()
+        VenueImage.forEach((item, index) => {
+            formData.append(item.caption, item.image);
+        });
+        formData.append("venue_id", venueDetails.id)
+        
+        try {
+            await axios.post(baseURL + `admin-control/venue-management/venue-images/`, formData, {
+                headers: {
+                    authorization: `Bearer ${token}`,
+                    "Content-Type": "multipart/form-data",
+                },
+            })
+                .then((res) => {
+                    console.log("from image submission  :", res);
+                    setVenueImage([])
+                    setVenueDetails((prev) => {
+                        const updatedImages = prev.images.concat(res.data)
+                        return { ...prev, images: updatedImages };
+                    })
+                    TSuccess("Images Added !!")
+                });
+            } catch (error) {
+            console.error('Failed to upload images:', error);
+        }
+    }
 
     useEffect(() => {
         fetchVenueData(baseURL + `admin-control/venue-management/venue/${venueId}/`);
-        // eslint-disable-next-line
     }, []);
-
 
     return (
         <>
@@ -180,7 +247,7 @@ const VenueDetails = () => {
                         <div className=" px-4 py-8 lg:py-16 w-full max-w-6xl">
                             <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">Update Venue</h2>
                             <div className='flex flex-col lg:flex-row gap-10 w-full lg:justify-between'>
-                                <div className='w-full md:w-2/3'>
+                                <div className='w-full md:w-3/5'>
                                     <form onSubmit={handleSubmit}>
                                         <div className="grid gap-4 mb-4 sm:grid-cols-3 sm:gap-6 sm:mb-5">
 
@@ -264,19 +331,23 @@ const VenueDetails = () => {
                                         </div>
                                     </form>
                                 </div>
-                                <div className='w-full lg:w-1/3 h-96'>
+                                <div className='w-full lg:w-2/5'>
                                     <h2 className="mb-4 text-xl font-bold text-gray-900 dark:text-white">Venue images</h2>
-                                    <div className="overflow-y-auto overflow-x-hidden h-full max-h-96">
+                                    <div className="overflow-y-auto bg-black border-8 border-black py-1 px-4 rounded-lg overflow-x-hidden h-full max-h-96">
                                         {!venueDetails.images.length && <div className="p-3 h-24 bg-gray-800 text-red-500 text-md uppercase ">No images to show</div>}
                                         {venueDetails.images.map((image, index) => (
-                                            <div key={index} className="p-3 bg-gray-800 ">
+                                            <div key={index} className="p-3 bg-gray-100 mb-5 rounded-lg border dark:bg-gray-800 ">
                                                 <h2 className='m-2 font-semibold text-lg uppercase' >{image.caption}</h2>
                                                 <div className='flex justify-start w-full'>
 
-                                                    <div className="w-3/5 md:w-28 md:h-28 mx-2 my-2">
-                                                        <img className="w-full h-full" src={image.image} alt="" />
+                                                    <div className="w-3/5 md:w-28 md:h-28  mx-2 my-2">
+                                                        <img 
+                                                            className="w-full h-full rounded-full transform hover:scale-110 hover:rounded-md transition-all duration-200 ease-in-out" 
+                                                            src={image.image.includes(baseURL) ? image.image : baseURL+image.image} 
+                                                            // src={image.image} 
+                                                            alt="" />
                                                     </div>
-                                                    <div className="my-2 mx-2 w-2/5 my-auto ">
+                                                    <div className="mx-2 w-2/5 my-auto ">
                                                         <input
                                                             type="file"
                                                             onChange={(e) => handleImage(e, image.id)}
@@ -290,7 +361,68 @@ const VenueDetails = () => {
                                             </div>
                                         ))}
                                     </div>
+                                    <div className="w-full max-w-3xl my-4 mx-auto">
+                                        <h2 className="my-4 text-xl font-bold text-gray-900 dark:text-white">Add images</h2>
+                                        <form onSubmit={handleImageSubmit}>
+
+                                            <div className="h-full">
+                                                <div className="p-3 dark:bg-gray-800 mb-4">
+                                                    <h2 className='m-2 font-semibold text-lg uppercase' ></h2>
+                                                    <div className='flex gap-10 flex-col justify-start w-full'>
+                                                        <div className=''>
+                                                            <label className='block mb-2 text-sm font-medium text-gray-900 dark:text-white' htmlFor="caption"> Image for</label>
+                                                            <input type="text" id='caption' ref={venueCaptionRef} onChange={(e) => handleCaptionChange(e)} className='bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500' placeholder='Image for..' />
+
+                                                        </div>
+                                                        {/* <div className="w-3/5 md:w-28 md:h-28 mx-2 my-2">
+                                                        <img className="w-full h-full" src="" alt="" />
+                                                    </div>
+                                                    <div className="my-2 mx-2 w-2/5 my-auto ">
+                                                        <input
+                                                            type="file"
+                                                            // onChange={(e) => handleImage(e, image.id)}
+                                                            className="overflow-x-auto"
+                                                            id="{`image${index}`}"
+                                                            name="{`image${index}`}"
+                                                            accept=".jpg,.jpeg,.WEBP,.png"
+                                                        />
+                                                    </div> */}
+
+                                                        <div className={`${!showDropdown && "hidden"} flex items-center justify-center w-full`}>
+                                                            <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer dark:bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                                                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                                    <svg className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
+                                                                    </svg>
+                                                                    <p className="mb-2 text-sm text-gray-500 dark:text-gray-400"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                                                    <p className="text-xs text-gray-500 dark:text-gray-400">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                                                                </div>
+                                                                <input id="dropzone-file" ref={venueImageRef} onChange={handleImageDrag} type="file" name='' className="hidden" />
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div style={{ border: '15px solid rgb(31 41 55)' }} className='p-3  dark:border-gray-500 rounded-lg bg-gray-200 dark:bg-gray-900 h-full md:min-h-32 md:max-h-64 overflow-y-auto overflow-x-hidden'>
+                                                    {VenueImage.length ? VenueImage.map((file, index) => (
+                                                        <div key={index} className='bg-gray-500 px-2 py-1 my-3 rounded-lg hover:shadow-md flex justify-between items-center hover:shadow-white'>
+                                                            <span>{`${file.caption} - ${file.image?.name ?? ""}`}</span>
+                                                            <button type='button' onClick={(e) => removeSelectedImage(e, file.id)} className='p-1 w-8 h-8 hover:bg-gray-100 hover:text-black rounded-md'>x</button>
+                                                        </div>
+                                                    )) : "No files selected"}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center my-4 space-x-4">
+                                                <button type="submit" className="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+                                                    Add Images
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
+
+
+
+
                             </div>
                         </div>
                     </div>
